@@ -17,7 +17,7 @@
 create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
   # add the genre and track number to the payload of acoustic features
-  payload <- c(list(genre = genre, limit = ntracks), payload)
+  payload <- c(list(seed_genres = genre, limit = ntracks), payload)
   
   # make GET request to obtain recommendations
   rec <- httr::GET("https://api.spotify.com/v1/recommendations",
@@ -61,7 +61,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
                       "Authorization" = paste0("Bearer ", token)
                     ),
                     body = list(
-                      name = paste0("Acoustic featuRed ", payload$genre, " playlist"),
+                      name = paste0("Acoustic featuRed ", payload$seed_genres, " playlist"),
                       description = "Recommended playlist based on acoustic feature patterns",
                       public = "false"
                     ), encode = "json")
