@@ -23,7 +23,7 @@ First, save your Spotify user ID and the playlist ID as the following variable n
 
 <code>
     userID <- "myusername"
-
+    
     plID <- "4Tpa0M0JpNF5FVDoddUToF"
 </code>
 
@@ -32,7 +32,7 @@ Now save your Client ID and Secret Client from your Developer account:
 
 <code>
     clID <- "35fd9[...]c7ac"
-
+    
     secID <- "4Tpa[...]UToF"
 </code>
 
@@ -60,7 +60,7 @@ There are two types of tokens you can extract from this list: the initial author
 
 <code>
     token <- tokens[[1]]
-
+    
     refresh <- tokens[[2]]
 </code>
 
