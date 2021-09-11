@@ -77,7 +77,7 @@ The first thing to do is get some basic information about the playlist you want 
 
 
 
-Now here comes the fun bit. The next function will analyze all of the acoustic/audio features for all of the songs in your playlist, and perform a principal components analysis (PCA) on all of these features. This will extract underlying patterns in your listening habits that you probably didn't even know were there! This function may take a bit of time if you have many songs in the playlist, because we'll need to take some breaks if your API requests are getting to quick/numerous:
+Now here comes the fun bit. The next function will analyze all of the acoustic/audio features for all of the songs in your playlist, and perform a principal components analysis (PCA) on all of these features. This will extract underlying patterns in your listening habits that you probably didn't even know were there! This function may take a bit of time if you have many songs in the playlist, because we'll need to take some breaks if your API requests are getting too quick/numerous:
 
 
     payload <- analyze_playlist_features(plfeatures, token)
@@ -86,7 +86,7 @@ Now here comes the fun bit. The next function will analyze all of the acoustic/a
 # Generating a recommended playlist
 The hard part is done! 
 
-Now that you have analyze your initial playlist, you can generate <em>new</em> playlists full of songs that have <em>similar acoustic features</em> associated with those hidden, underlying patterns in your listening habits. The cool thing is that you can do this for any music genre you want. Make a country music list based on your hip-hop listening habits, or a punk list based on your classical music habits! You can also control how many songs are in the playlist. A full list of the available genre names is given in the "genres.R" file.
+Now that you have analyzed your initial playlist, you can generate <em>new</em> playlists full of songs that have <em>similar acoustic features</em> associated with those hidden, underlying patterns in your listening habits. The cool thing is that you can do this for any music genre you want: make a country music list based on your hip-hop listening habits, or a punk list based on your classical music habits! A full list of the available genre names is given in the "genres.R" file. You can also control how many songs are in the playlist.
 
 Here's an example for a folk playlist of 50 songs, which match the acoustic features of the Led Zeppelin example playlist we're using here:
 
