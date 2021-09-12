@@ -16,8 +16,8 @@
 
 create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
-  if (ntracks > 100) {
-    stop("You can only request a maximum of 100 tracks.")
+  if (ntracks > 1000) {
+    stop("You can request a maximum of 100 tracks!")
   }
   
   # extract playlist name
@@ -71,7 +71,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
                       "Authorization" = paste0("Bearer ", token)
                     ),
                     body = list(
-                      name = paste0("A featuRed ", payload$seed_genres, " playlist based on ", name),
+                      name = paste0("featuRed: ",name," (", payload$seed_genres, ")"),
                       description = "Recommended playlist based on acoustic feature patterns",
                       public = "false"
                     ), encode = "json")
