@@ -16,6 +16,10 @@
 
 create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
+  if (ntracks > 100) {
+    stop("You can only request a maximum of 100 tracks.")
+  }
+  
   # extract playlist name
   name <- payload$name
   
@@ -78,17 +82,28 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   # get the unique ID associated with the newly created playlist
   plID <- newpl$id
   
-  # get the URIs associated with the recommended tracks
-  rectracks <- noquote(paste0(recpl$tracks$uri,collapse=","))
+  # break up the requested tracks into blocks of 50 to avoid URLs that are too long
+  blocks <- 50*(0:(ntracks %/% 50))
+  if (ntracks %% 50 > 0) {
+    blocks <- c(blocks, ntracks %% 50 + blocks[length(blocks)])
+  }
   
-  # make POST request to add the tracks to the playlist
-  savedpl <- httr::POST(paste0("https://api.spotify.com/v1/playlists/",plID,"/tracks"),
-                        add_headers(
-                          "Accept" = "application/json",
-                          "Content-Type" = "application/json", 
-                          "Authorization" = paste0("Bearer ", token)
-                        ),
-                        query = list(
-                          uris = rectracks
-                        ), encode = "form")
+  for (block in 1:(length(blocks)-1) ) {
+    # get the number of tracks for this block
+    tracks <- (blocks[block]+1):blocks[block+1]
+    
+    # get the URIs associated with the recommended tracks
+    rectracks <- noquote(paste0(recpl$tracks$uri[tracks],collapse=","))
+    
+    # make POST request to add the tracks to the playlist
+    savedpl <- httr::POST(paste0("https://api.spotify.com/v1/playlists/",plID,"/tracks"),
+                          add_headers(
+                            "Accept" = "application/json",
+                            "Content-Type" = "application/json", 
+                            "Authorization" = paste0("Bearer ", token)
+                          ),
+                          query = list(
+                            uris = rectracks
+                          ), encode = "form")
+  }
 }
