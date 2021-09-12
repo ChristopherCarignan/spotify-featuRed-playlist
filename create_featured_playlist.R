@@ -20,7 +20,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   name <- payload$name
   
   # remove playlist name from payload
-  payload <- payload[2:length(payload)]
+  payload <- payload[1:(length(payload)-1)]
   
   # add the genre and track number to the payload of acoustic features
   payload <- c(list(seed_genres = genre, limit = ntracks), payload)
@@ -38,7 +38,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   recpl <- jsonlite::fromJSON(rawToChar(rec$content))
   
   # sometimes a result will not be returned if there are too many acoustic parameters used
-  # in the case, the request is iterated, removing one acoustic feature each time, until a successful GET request is obtained
+  # in this case, the request is iterated, removing one acoustic feature each time, until a successful GET request is obtained
   while (length(recpl)==1) {
     
     # remove one feature (the least important in the current list of features)
@@ -67,7 +67,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
                       "Authorization" = paste0("Bearer ", token)
                     ),
                     body = list(
-                      name = paste0("A ", payload$seed_genres, " playlist based on ", payload$name),
+                      name = paste0("A featuRed ", payload$seed_genres, " playlist based on ", name),
                       description = "Recommended playlist based on acoustic feature patterns",
                       public = "false"
                     ), encode = "json")

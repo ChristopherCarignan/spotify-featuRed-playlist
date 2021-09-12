@@ -21,7 +21,7 @@ analyze_playlist_features <- function (result, token) {
   playlist <- stringr::str_remove(result$href, '\\?offset=0\\&limit=100')
   
   # acoustic features used by Spotify
-  featnames <- c("danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness","liveness","valence","tempo")
+  featnames <- c("danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness","liveness","valence","tempo","time_signature")
   
   # preallocate an array of acoustic features for all songs in the playlist
   acdata <- as.data.frame(matrix(data=0,nrow=ntracks,ncol=length(featnames)))
@@ -116,6 +116,11 @@ analyze_playlist_features <- function (result, token) {
   avgfeatures <- as.data.frame(t(colMeans(acdata)))
   avgfeatures <- avgfeatures[,names(orddat)]
   
+  # round to integers where required
+  avgfeatures$key <- round(avgfeatures$key)
+  avgfeatures$mode <- round(avgfeatures$mode)
+  avgfeatures$time_signature <- round(avgfeatures$time_signature)
+  
   payload <- c()
   # add the average feature values to the payload to be sent for playlist recommendation
   for (x in 1:tokeep) {
@@ -123,7 +128,7 @@ analyze_playlist_features <- function (result, token) {
   }
   
   # add playlist name
-  payload <- c(list(name = name), payload)
+  payload$name <- name
   
   return(payload)
 }
