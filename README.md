@@ -28,7 +28,7 @@ First, save your Spotify user ID and the playlist ID as the following variable n
 
 Now save your Client ID and Secret Client from your Developer account:
 
-    clID <- "35fd9[...]c7ac"
+    clID <- "35fd[...]c7ac"
     
     secID <- "4Tpa[...]UToF"
 
@@ -42,7 +42,7 @@ There are a number of authorization steps that you need to take in order to give
 
 At this point you will be redirected to a blank web page... that's good! Take a look at the address in your browser: there should be a lot of stuff in there. Copy the entire address line and use it as a string input to the handshake function:
 
-    key <- handshake("http://localhost:8888/callback/?code=AQCJO4W4[...]LOVjK")
+    key <- handshake("http://localhost:8888/callback/?code=AQCJ[...]OVjK")
 
 
 If you've done this correctly, you can now get authorization tokens using the key output from the handshake function:
