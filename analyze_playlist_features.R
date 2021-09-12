@@ -123,7 +123,7 @@ analyze_playlist_features <- function (result, token) {
   
   payload <- c()
   # add the average feature values to the payload to be sent for playlist recommendation
-  for (x in 1:tokeep) {
+  for (x in 1:length(featnames)) {
     payload[[paste0("target_",names(avgfeatures)[x])]] <- as.numeric(avgfeatures[x])
   }
   
