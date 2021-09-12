@@ -12,6 +12,20 @@ query_playlist <- function (plID, token) {
   playlist <- paste0("https://api.spotify.com/v1/playlists/",plID)
   
   # make GET request to query the playlist
+  req <- httr::GET(playlist, 
+                   add_headers(
+                     "Accept" = "application/json",
+                     "Content-Type" = "application/json", 
+                     "Authorization" = paste0("Bearer ", token)
+                   ))
+  
+  # convert results from JSON format
+  result <- jsonlite::fromJSON(rawToChar(req$content))
+  
+  # playlist name
+  name <- result$name
+  
+  # make GET request to query the playlist tracks
   req <- httr::GET(paste0(playlist,"/tracks"), 
                    add_headers(
                      "Accept" = "application/json",
@@ -21,6 +35,9 @@ query_playlist <- function (plID, token) {
   
   # convert results from JSON format
   result <- jsonlite::fromJSON(rawToChar(req$content))
+  
+  # add playlist name
+  result$name <- name
   
   return(result)
 }

@@ -11,6 +11,9 @@
 
 analyze_playlist_features <- function (result, token) {
   
+  # playlist name
+  name <- result$name
+  
   # find the total number of tracks in the playlist
   ntracks <- result$total
   
@@ -118,6 +121,9 @@ analyze_playlist_features <- function (result, token) {
   for (x in 1:tokeep) {
     payload[[paste0("target_",names(avgfeatures)[x])]] <- as.numeric(avgfeatures[x])
   }
+  
+  # add playlist name
+  payload <- c(list(name = name), payload)
   
   return(payload)
 }

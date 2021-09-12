@@ -16,6 +16,12 @@
 
 create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
+  # extract playlist name
+  name <- payload$name
+  
+  # remove playlist name from payload
+  payload <- payload[2:length(payload)]
+  
   # add the genre and track number to the payload of acoustic features
   payload <- c(list(seed_genres = genre, limit = ntracks), payload)
   
@@ -61,7 +67,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
                       "Authorization" = paste0("Bearer ", token)
                     ),
                     body = list(
-                      name = paste0("Acoustic featuRed ", payload$seed_genres, " playlist"),
+                      name = paste0("A ", payload$seed_genres, " playlist based on ", payload$name),
                       description = "Recommended playlist based on acoustic feature patterns",
                       public = "false"
                     ), encode = "json")
