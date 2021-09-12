@@ -16,7 +16,7 @@
 
 create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
-  if (ntracks > 1000) {
+  if (ntracks > 100) {
     stop("You can request a maximum of 100 tracks!")
   }
   
