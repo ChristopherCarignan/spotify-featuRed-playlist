@@ -86,7 +86,7 @@ Now here comes the fun bit. The next function will analyze all of the acoustic/a
 # Generating a recommended playlist
 The hard part is done! 
 
-Now that you have analyzed your initial playlist, you can generate <em>new</em> playlists full of songs that have <em>similar acoustic features</em> associated with those hidden, underlying patterns in your listening habits. The cool thing is that you can do this for any music genre you want: make a country music list based on your hip-hop listening habits, or a punk list based on your classical music habits! A full list of the available genre names is given in the "genres.R" file. You can also control how many songs are in the playlist.
+Now that you have analyzed your initial playlist, you can generate <em>new</em> playlists full of songs that have <em>similar acoustic features</em> associated with those hidden, underlying patterns in your listening habits. The cool thing is that you can do this for any music genre you want: make a country music list based on your hip-hop listening habits, or a punk list based on your classical music habits! A full list of the available genre names is given in the "genres.R" file. You can also control how many songs are in the playlist (100 maximum).
 
 Here's an example for a folk playlist of 50 songs, which match the acoustic features of the Led Zeppelin example playlist we're using here:
 
