@@ -131,5 +131,5 @@ analyze_playlist_features <- function (result, token) {
   # add playlist name
   payload$name <- name
   
-  return(payload, genres)
+  return(payload)
 }
