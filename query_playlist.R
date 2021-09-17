@@ -211,7 +211,7 @@ query_playlist <- function (plID, token) {
   # retain the top genres
   genres <- sort(table(unlist(genres)),decreasing=T)
   idx <- which.min(abs(diff(genres)))[1]+1
-  genres <- genres[1:idx]
+  genres <- names(genres[1:idx])
   
   # add the average popularity
   result$popularity <- round(mean(popularity))
