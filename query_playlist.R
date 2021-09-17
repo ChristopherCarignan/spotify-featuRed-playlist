@@ -39,5 +39,38 @@ query_playlist <- function (plID, token) {
   # add playlist name
   result$name <- name
   
-  return(result)
+  # get genres of first 100 songs (has to be done by artist, unfortunately)
+  genres <- c()
+  for (track in result$items$track$artists) {
+    
+    # extract info on track artist
+    if (is.null(track[[1]]$id)) {
+      artist <- track$id
+    } else {
+      artist <- track[[1]]$id
+    }
+    
+    # if there are multiple artists, get the first one
+    artist <- artist[1]
+    
+    # make GET request to query the artist info
+    req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
+                     httr::add_headers(
+                       "Accept" = "application/json",
+                       "Content-Type" = "application/json", 
+                       "Authorization" = paste0("Bearer ", token)
+                     ))
+    # convert results from JSON format
+    info <- jsonlite::fromJSON(rawToChar(req$content))
+    
+    # add genres
+    for (genre in 1:length(info$genres)) {
+      genres <- c(genres,info$genres[genre])
+    }
+  }
+  
+  # retain the top 5 genres
+  genres <- names(rev(sort(table(genres)))[1:5])
+  
+  return(list(result,genres))
 }

@@ -27,11 +27,11 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   payload <- payload[1:(length(payload)-1)]
   
   # add the genre and track number to the payload of acoustic features
-  payload <- c(list(seed_genres = genre, limit = ntracks), payload)
+  payload <- c(list(seed_genres = noquote(paste0(genre,collapse=",")), limit = ntracks), payload)
   
   # make GET request to obtain recommendations
   rec <- httr::GET("https://api.spotify.com/v1/recommendations",
-                   add_headers(
+                   httr::add_headers(
                      "Accept" = "application/json",
                      "Content-Type" = "application/json", 
                      "Authorization" = paste0("Bearer ", token)
@@ -50,7 +50,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
     
     # make new GET request to obtain recommendations
     rec <- httr::GET("https://api.spotify.com/v1/recommendations",
-                     add_headers(
+                     httr::add_headers(
                        "Accept" = "application/json",
                        "Content-Type" = "application/json", 
                        "Authorization" = paste0("Bearer ", token)
@@ -63,9 +63,10 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
   
   # make POST request to create an empty playlist in the user's profile
+  if (length(genre)==1) {
   req <- httr::POST(paste0("https://api.spotify.com/v1/users/",userID,"/playlists"),
-                    accept_json(),
-                    add_headers(
+                    httr::accept_json(),
+                    httr::add_headers(
                       "Accept" = "application/json",
                       "Content-Type" = "application/json", 
                       "Authorization" = paste0("Bearer ", token)
@@ -75,6 +76,20 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
                       description = "Recommended playlist based on acoustic feature patterns",
                       public = "false"
                     ), encode = "json")
+  } else {
+    req <- httr::POST(paste0("https://api.spotify.com/v1/users/",userID,"/playlists"),
+                      httr::accept_json(),
+                      httr::add_headers(
+                        "Accept" = "application/json",
+                        "Content-Type" = "application/json", 
+                        "Authorization" = paste0("Bearer ", token)
+                      ),
+                      body = list(
+                        name = paste0("featuRed: ",name),
+                        description = "Recommended playlist based on acoustic feature patterns",
+                        public = "false"
+                      ), encode = "json")
+  }
   
   # convert results from JSON format
   newpl <- jsonlite::fromJSON(rawToChar(req$content))
@@ -97,7 +112,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
     
     # make POST request to add the tracks to the playlist
     savedpl <- httr::POST(paste0("https://api.spotify.com/v1/playlists/",plID,"/tracks"),
-                          add_headers(
+                          httr::add_headers(
                             "Accept" = "application/json",
                             "Content-Type" = "application/json", 
                             "Authorization" = paste0("Bearer ", token)
