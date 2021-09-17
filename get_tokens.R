@@ -13,7 +13,7 @@ get_tokens <- function(key, clID, secID) {
   
   # make POST request
   req <- httr::POST("https://accounts.spotify.com/api/token",
-                    accept_json(),
+                    httr::accept_json(),
                     body = list(
                       client_id = clID,
                       client_secret = secID,
