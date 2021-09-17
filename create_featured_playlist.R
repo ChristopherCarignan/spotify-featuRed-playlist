@@ -24,7 +24,7 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   name <- payload$name
   
   # remove playlist name from payload
-  payload <- payload[1:(length(payload)-1)]
+  payload <- payload[names(payload)!="name"]
   
   # add the genre and track number to the payload of acoustic features
   payload <- c(list(seed_genres = noquote(paste0(genre,collapse=",")), limit = ntracks), payload)

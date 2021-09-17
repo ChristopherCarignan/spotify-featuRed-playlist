@@ -39,8 +39,9 @@ query_playlist <- function (plID, token) {
   # add playlist name
   result$name <- name
   
-  # get genres of first 100 songs (has to be done by artist, unfortunately)
+  # get genres and popularity of first 100 songs (has to be done by artist, unfortunately)
   genres <- c()
+  popularity <- c()
   for (track in result$items$track$artists) {
     
     # extract info on track artist
@@ -67,11 +68,17 @@ query_playlist <- function (plID, token) {
     for (genre in 1:length(info$genres)) {
       genres <- c(genres,info$genres[genre])
     }
+    
+    # add popularity
+    popularity <- c(popularity,info$popularity)
   }
   
   # retain the top 5 genres
   genres <- names(rev(sort(table(unlist(genres))))[1:5])
   genres <- genres[!is.na(genres)]
+  
+  # add the average popularity
+  result$popularity <- round(mean(popularity))
   
   return(list(result,genres))
 }

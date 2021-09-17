@@ -14,6 +14,9 @@ analyze_playlist_features <- function (result, token) {
   # playlist name
   name <- result$name
   
+  # target popularity
+  popularity <- result$popularity
+  
   # find the total number of tracks in the playlist
   ntracks <- result$total
   
@@ -94,6 +97,15 @@ analyze_playlist_features <- function (result, token) {
         # add the features to data frame
         acdata[[feature]][thistrack] <- features[[feature]]
       }
+      
+      # get other features associated with the track ID
+      features <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
+                            httr::add_headers("Authorization" = paste0("Bearer ", token)
+                            ))
+      
+      # convert results from JSON format
+      features <- jsonlite::fromJSON(rawToChar(features$content))
+      
       # iterate the track number
       thistrack <- thistrack + 1
     }
@@ -132,6 +144,9 @@ analyze_playlist_features <- function (result, token) {
   for (x in 1:length(featnames)) {
     payload[[paste0("target_",names(avgfeatures)[x])]] <- as.numeric(avgfeatures[x])
   }
+  
+  # add target popularity 
+  payload$target_popularity <- popularity
   
   # add playlist name
   payload$name <- name
