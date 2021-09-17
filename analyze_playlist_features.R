@@ -30,13 +30,14 @@ analyze_playlist_features <- function (result, token) {
   # preallocate variables
   thistrack <- 1
   offset <- 0
+  genres <- c(0,0)
   
   # since the API will only allow playlist request for 100 songs at a time, the main while loop will continue until the playlist is exhausted
   while (ntracks > offset) {
     
     # make GET request to query the playlist
     req <- httr::GET(playlist, 
-                     add_headers(
+                     httr::add_headers(
                        "Accept" = "application/json",
                        "Content-Type" = "application/json", 
                        "Authorization" = paste0("Bearer ", token)
@@ -52,7 +53,7 @@ analyze_playlist_features <- function (result, token) {
       
       # make new GET request to query the playlist
       req <- httr::GET(playlist, 
-                       add_headers(
+                       httr::add_headers(
                          "Accept" = "application/json",
                          "Content-Type" = "application/json", 
                          "Authorization" = paste0("Bearer ", token)
@@ -70,7 +71,7 @@ analyze_playlist_features <- function (result, token) {
       
       # get the acoustic/audio features associated with the track ID
       features <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
-                            add_headers("Authorization" = paste0("Bearer ", token)
+                            httr::add_headers("Authorization" = paste0("Bearer ", token)
                             ))
       
       # convert results from JSON format
@@ -83,7 +84,7 @@ analyze_playlist_features <- function (result, token) {
         
         # get the acoustic/audio features associated with the track ID
         features <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
-                              add_headers("Authorization" = paste0("Bearer ", token)
+                              httr::add_headers("Authorization" = paste0("Bearer ", token)
                               ))
         
         # convert results from JSON format
@@ -130,5 +131,5 @@ analyze_playlist_features <- function (result, token) {
   # add playlist name
   payload$name <- name
   
-  return(payload)
+  return(payload, genres)
 }
