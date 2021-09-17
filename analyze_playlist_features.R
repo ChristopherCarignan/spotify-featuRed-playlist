@@ -119,12 +119,9 @@ analyze_playlist_features <- function (result, token) {
   # Determine the variance explained by the PCs
   vars    <- apply(pca$x, 2, var)
   
-  # Keep PCs with eigenvalues >= 1 (i.e., Kaiser criterion)
-  tokeep  <- length(which(vars >= 1)) 
-  
-  # weight the (absolute) PC scores by multiplying by the variances of the retained PCs
-  scores <- abs(pca$x[,1:tokeep])
-  for (weight in 1:tokeep) {
+  # weight the (absolute) PC scores by multiplying by the variances of the PCs
+  scores <- abs(pca$x)
+  for (weight in 1:ncol(scores)) {
     scores[,weight] <- scores[,weight] * vars[weight]
   }
   
@@ -133,8 +130,8 @@ analyze_playlist_features <- function (result, token) {
   orddat <- cbind(1:length(orddat),orddat)
   orddat <- orddat[order(orddat[,2],decreasing=T),]
   
-  # retain the top third of the weighted and ordered tracks
-  orddat <- orddat[1:round(nrow(orddat)/3),]
+  # retain the top 50% of the weighted and ordered tracks
+  orddat <- orddat[1:round(nrow(orddat)/2),]
   
   # get the relevant acoustic features for the retained tracks
   filtdat <- acdata[orddat[,1],]
