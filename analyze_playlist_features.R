@@ -2,8 +2,8 @@
 #
 # analyze_playlist_features() analyzes 12 different acoustic/audio features from each song in the user's playlist. 
 # The results are submitted to a principal components analysis (PCA) model in order to find the underlying dimensions shared by these features.
-# Principal components (PCs) with eigenvalues >= 1 are retained for feature extraction.
-# The acoustic features that are most heavily weighted across the retained PCs are used for feature estimation of playlist recommendation.
+# Principal component scores are weighted by their variance to create a weighting scheme for track retention.
+# The acoustic features of the retained tracks are used for feature estimation of playlist recommendation.
 #
 # inputs
 # result (list): the result of the playlist query from query_playlist()
