@@ -70,7 +70,7 @@ query_playlist <- function (plID, token) {
   }
   
   # retain the top 5 genres
-  genres <- names(rev(sort(table(genres)))[1:5])
+  genres <- names(rev(sort(table(unlist(genres))))[1:5])
   genres <- genres[!is.na(genres)]
   
   return(list(result,genres))
