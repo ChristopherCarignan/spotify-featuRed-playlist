@@ -12,7 +12,7 @@ refresh_token <- function (refresh, clID, secID) {
   
   # make POST request to refresh the authorization token
   req <- httr::POST("https://accounts.spotify.com/api/token",
-                    accept_json(),
+                    httr::accept_json(),
                     body = list(
                       client_id = clID,
                       client_secret = secID,
