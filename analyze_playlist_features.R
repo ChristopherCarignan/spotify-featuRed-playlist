@@ -117,10 +117,10 @@ analyze_playlist_features <- function (result, token) {
   avgfeatures <- as.data.frame(t(colMeans(acdata)))
   avgfeatures <- avgfeatures[,names(orddat)]
   
-  # round to integers where required
-  avgfeatures$key <- round(avgfeatures$key)
-  avgfeatures$mode <- round(avgfeatures$mode)
-  avgfeatures$time_signature <- round(avgfeatures$time_signature)
+  # for integer features, find the most common one
+  avgfeatures$key <- as.numeric(names(rev(sort(table(acdata$key))))[1])
+  avgfeatures$mode <- as.numeric(names(rev(sort(table(acdata$mode))))[1])
+  avgfeatures$time_signature <- as.numeric(names(rev(sort(table(acdata$time_signature))))[1])
   
   payload <- c()
   # add the average feature values to the payload to be sent for playlist recommendation
