@@ -13,7 +13,7 @@ query_playlist <- function (plID, token) {
   
   # make GET request to query the playlist
   req <- httr::GET(playlist, 
-                   add_headers(
+                   httr::add_headers(
                      "Accept" = "application/json",
                      "Content-Type" = "application/json", 
                      "Authorization" = paste0("Bearer ", token)
@@ -27,7 +27,7 @@ query_playlist <- function (plID, token) {
   
   # make GET request to query the playlist tracks
   req <- httr::GET(paste0(playlist,"/tracks"), 
-                   add_headers(
+                   httr::add_headers(
                      "Accept" = "application/json",
                      "Content-Type" = "application/json", 
                      "Authorization" = paste0("Bearer ", token)
