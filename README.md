@@ -75,7 +75,7 @@ The first thing to do is get some basic information about the playlist you want 
 
     plfeatures <- query_playlist(plID, token)
     
-    features <- plfeatures[[1]]
+    info <- plfeatures[[1]]
     
     genres <- plfeatures[[2]]
 
@@ -84,7 +84,7 @@ The first thing to do is get some basic information about the playlist you want 
 Now here comes the fun bit. The next function will analyze all of the acoustic/audio features for all of the songs in your playlist, and perform a principal components analysis (PCA) on all of these features. This will extract underlying patterns in your listening habits that you probably didn't even know were there! This function may take a bit of time if you have many songs in the playlist, because we'll need to take some breaks if your API requests are getting too quick/numerous:
 
 
-    payload <- analyze_playlist_features(plfeatures, token)
+    payload <- analyze_playlist_features(info, token)
 
 
 # Generating a recommended playlist
