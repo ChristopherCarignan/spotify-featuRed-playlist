@@ -101,5 +101,8 @@ Here's an example for a folk playlist of 50 songs, which match the acoustic feat
 
     create_featured_playlist(payload, "folk", 50, userID, token)
 
+You can also use multiple genres (up to 5) to fine-tune your recommendation:
+
+    create_featured_playlist(payload, c("folk","soul","motown"), 50, userID, token)
 
 At this point, the playlist should be saved to your Spotify account. Now go listen!
