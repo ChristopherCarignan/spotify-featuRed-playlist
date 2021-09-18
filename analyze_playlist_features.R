@@ -2,8 +2,8 @@
 #
 # analyze_playlist_features() analyzes 12 different acoustic/audio features from each song in the user's playlist. 
 # The results are submitted to a principal components analysis (PCA) model in order to find the underlying dimensions shared by these features.
-# Principal component scores are weighted by their variance to create a weighting scheme for track retention.
-# The acoustic features of the retained tracks are used for feature estimation of playlist recommendation.
+# Principal components (PCs) with eigenvalues >= 1 are retained for feature extraction.
+# The acoustic features that are most heavily weighted across the retained PCs are used for feature estimation of playlist recommendation.
 #
 # inputs
 # result (list): the result of the playlist query from query_playlist()
@@ -119,19 +119,16 @@ analyze_playlist_features <- function (result, token) {
   # Determine the variance explained by the PCs
   vars    <- apply(pca$x, 2, var)
   
-  # weight the (absolute) PC scores by multiplying by the variances of the PCs
-  scores <- abs(pca$x)
-  for (weight in 1:ncol(scores)) {
-    scores[,weight] <- scores[,weight] * vars[weight]
-  }
+  # Keep PCs with eigenvalues >= 1 (i.e., Kaiser criterion)
+  tokeep  <- length(which(vars >= 1)) 
   
-  # order the results
-  orddat <- rowMeans(scores)
+  # order the (absolute) scores for the retained PCs, to be used as a weighting
+  orddat <- rowMeans(abs(pca$x[,1:tokeep]))
   orddat <- cbind(1:length(orddat),orddat)
   orddat <- orddat[order(orddat[,2],decreasing=T),]
   
-  # retain the top 50% of the weighted and ordered tracks
-  orddat <- orddat[1:round(nrow(orddat)/2),]
+  # retain the top 25% of the weighted tracks
+  orddat <- orddat[1:round(length(orddat)/4),]
   
   # get the relevant acoustic features for the retained tracks
   filtdat <- acdata[orddat[,1],]
