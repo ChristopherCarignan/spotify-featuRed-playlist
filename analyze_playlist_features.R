@@ -127,8 +127,8 @@ analyze_playlist_features <- function (result, token) {
   orddat <- cbind(1:length(orddat),orddat)
   orddat <- orddat[order(orddat[,2],decreasing=T),]
   
-  # retain the top 25% of the weighted tracks
-  orddat <- orddat[1:round(length(orddat)/4),]
+  # retain the top weighted tracks, based on PC scores
+  orddat <- orddat[orddat[,2]>=1,]
   
   # get the relevant acoustic features for the retained tracks
   filtdat <- acdata[orddat[,1],]
