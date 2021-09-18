@@ -211,7 +211,11 @@ query_playlist <- function (plID, token) {
   # retain the top genres
   genres <- sort(table(unlist(genres)),decreasing=T)
   idx <- which.max(abs(diff(genres)))[1]
-  genres <- names(genres[1:idx])
+  if (length(genres)>1) {
+    genres <- names(genres[1:idx])
+  } else {
+    genres <- names(genres)
+  }
   
   # reduce to 5 genres if need be
   if (length(genres)>=5) {
