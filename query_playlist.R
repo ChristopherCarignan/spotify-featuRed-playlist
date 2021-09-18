@@ -282,7 +282,7 @@ query_playlist <- function (plID, token) {
   info$name <- name
   info$total <- ntracks
   info$genres <- genres
-  info$popularity <- round(mean(popularity))
+  info$popularity <- round(median(popularity))
   info$ID <- plID
   
   return(info)
