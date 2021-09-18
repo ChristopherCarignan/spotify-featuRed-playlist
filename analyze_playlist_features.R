@@ -9,19 +9,16 @@
 # result (list): the result of the playlist query from query_playlist()
 # token (character): authorization token provided by either get_tokens() or refresh_token()
 
-analyze_playlist_features <- function (result, token) {
+analyze_playlist_features <- function (info, token) {
   
   # playlist name
-  name <- result$name
+  name <- info$name
   
   # target popularity
-  popularity <- result$popularity
+  popularity <- info$popularity
   
   # find the total number of tracks in the playlist
-  ntracks <- result$total
-  
-  # extract the playlist URL
-  playlist <- stringr::str_remove(result$href, '\\?offset=0\\&limit=100')
+  ntracks <- info$total
   
   # acoustic features used by Spotify
   featnames <- c("danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness","liveness","valence","tempo","time_signature")
@@ -33,29 +30,32 @@ analyze_playlist_features <- function (result, token) {
   # preallocate variables
   thistrack <- 1
   offset <- 0
-  genres <- c(0,0)
   
-  # since the API will only allow playlist request for 100 songs at a time, the main while loop will continue until the playlist is exhausted
+  # since the API will only allow playlist request for 100 songs at a time, this main while loop will continue until the playlist is exhausted
   while (ntracks > offset) {
     
     # make GET request to query the playlist
-    req <- httr::GET(playlist, 
+    req <- httr::GET(paste0("https://api.spotify.com/v1/playlists/",info$ID,"/tracks/"),
                      httr::add_headers(
                        "Accept" = "application/json",
                        "Content-Type" = "application/json", 
                        "Authorization" = paste0("Bearer ", token)
-                     ), query = list(offset = offset, limit=100))
+                     ), query = list(offset=offset, limit=100))
     
     # convert results from JSON format
     result <- jsonlite::fromJSON(rawToChar(req$content))
     
-    # if an API request limit has been hit, try again after 5 seconds
+    # if an API request limit has been hit, try again after requested cooldown period
     while (length(result)==1) {
-      print("Too many API requests. Trying again in 5 seconds.")
-      Sys.sleep(5)
+      buffer <- req$all_headers[[1]]$headers$`retry-after`
+      if (is.null(buffer)) {
+        buffer <- "1"
+      }
+      print(paste0("Too many API requests. Trying again in ",buffer," second(s)."))
+      Sys.sleep(as.numeric(buffer))
       
       # make new GET request to query the playlist
-      req <- httr::GET(playlist, 
+      req <- httr::GET(paste0("https://api.spotify.com/v1/playlists/",info$ID,"/tracks/"),
                        httr::add_headers(
                          "Accept" = "application/json",
                          "Content-Type" = "application/json", 
@@ -73,38 +73,35 @@ analyze_playlist_features <- function (result, token) {
       trID <- result$items$track$id[track]
       
       # get the acoustic/audio features associated with the track ID
-      features <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
-                            httr::add_headers("Authorization" = paste0("Bearer ", token)
-                            ))
+      req <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
+                       httr::add_headers("Authorization" = paste0("Bearer ", token)
+                       ))
       
       # convert results from JSON format
-      features <- jsonlite::fromJSON(rawToChar(features$content))
+      features <- jsonlite::fromJSON(rawToChar(req$content))
       
-      # if an API request limit has been hit, try again after 5 seconds
+      # if an API request limit has been hit, try again after requested cooldown period
       while (length(features)==1) {
-        print("Too many API requests. Trying again in 5 seconds.")
-        Sys.sleep(5)
+        buffer <- req$all_headers[[1]]$headers$`retry-after`
+        if (is.null(buffer)) {
+          buffer <- "1"
+        }
+        print(paste0("Too many API requests. Trying again in ",buffer," second(s)."))
+        Sys.sleep(as.numeric(buffer))
         
         # get the acoustic/audio features associated with the track ID
-        features <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
-                              httr::add_headers("Authorization" = paste0("Bearer ", token)
-                              ))
+        req <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
+                         httr::add_headers("Authorization" = paste0("Bearer ", token)
+                         ))
         
         # convert results from JSON format
-        features <- jsonlite::fromJSON(rawToChar(features$content))
+        features <- jsonlite::fromJSON(rawToChar(req$content))
       }
+      
+      # add the features to data frame
       for (feature in featnames) {
-        # add the features to data frame
         acdata[[feature]][thistrack] <- features[[feature]]
       }
-      
-      # get other features associated with the track ID
-      features <- httr::GET(paste0("https://api.spotify.com/v1/audio-features/",trID),
-                            httr::add_headers("Authorization" = paste0("Bearer ", token)
-                            ))
-      
-      # convert results from JSON format
-      features <- jsonlite::fromJSON(rawToChar(features$content))
       
       # iterate the track number
       thistrack <- thistrack + 1

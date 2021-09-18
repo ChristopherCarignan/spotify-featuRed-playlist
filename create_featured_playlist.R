@@ -64,18 +64,18 @@ create_featured_playlist <- function (payload, genre, ntracks, userID, token) {
   
   # make POST request to create an empty playlist in the user's profile
   if (length(genre)==1) {
-  req <- httr::POST(paste0("https://api.spotify.com/v1/users/",userID,"/playlists"),
-                    httr::accept_json(),
-                    httr::add_headers(
-                      "Accept" = "application/json",
-                      "Content-Type" = "application/json", 
-                      "Authorization" = paste0("Bearer ", token)
-                    ),
-                    body = list(
-                      name = paste0("featuRed: ",name," (", payload$seed_genres, ")"),
-                      description = "Recommended playlist based on acoustic feature patterns",
-                      public = "false"
-                    ), encode = "json")
+    req <- httr::POST(paste0("https://api.spotify.com/v1/users/",userID,"/playlists"),
+                      httr::accept_json(),
+                      httr::add_headers(
+                        "Accept" = "application/json",
+                        "Content-Type" = "application/json", 
+                        "Authorization" = paste0("Bearer ", token)
+                      ),
+                      body = list(
+                        name = paste0("featuRed: ",name," (", payload$seed_genres, ")"),
+                        description = "Recommended playlist based on acoustic feature patterns",
+                        public = "false"
+                      ), encode = "json")
   } else {
     req <- httr::POST(paste0("https://api.spotify.com/v1/users/",userID,"/playlists"),
                       httr::accept_json(),

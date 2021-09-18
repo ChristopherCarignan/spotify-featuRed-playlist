@@ -152,54 +152,66 @@ query_playlist <- function (plID, token) {
   # convert results from JSON format
   result <- jsonlite::fromJSON(rawToChar(req$content))
   
+  # find the total number of tracks in the playlist
+  ntracks <- result$tracks$total
+  
   # playlist name
   name <- result$name
   
-  # make GET request to query the playlist tracks
-  req <- httr::GET(paste0(playlist,"/tracks"), 
-                   httr::add_headers(
-                     "Accept" = "application/json",
-                     "Content-Type" = "application/json", 
-                     "Authorization" = paste0("Bearer ", token)
-                   ), query = list(offset = 0, limit=100))
+  # preallocate variables
+  offset <- 0
   
-  # convert results from JSON format
-  result <- jsonlite::fromJSON(rawToChar(req$content))
-  
-  # add playlist name
-  result$name <- name
-  
-  # get genres and popularity of first 100 songs (has to be done by artist, unfortunately)
-  genres <- c()
-  popularity <- c()
-  for (track in result$items$track$artists) {
+  # since the API will only allow playlist request for 100 songs at a time, the main while loop will continue until the playlist is exhausted
+  while (ntracks > offset) {
     
-    # extract info on track artist
-    if (is.null(track[[1]]$id)) {
-      artists <- track$id
-    } else {
-      artists <- track[[1]]$id
-    }
+    # make GET request to query the playlist tracks
+    req <- httr::GET(paste0(playlist,"/tracks"), 
+                     httr::add_headers(
+                       "Accept" = "application/json",
+                       "Content-Type" = "application/json", 
+                       "Authorization" = paste0("Bearer ", token)
+                     ), query = list(offset = offset, limit=100))
     
-    # if there are multiple artists, get info on each one
-    for (artist in artists) {
+    # convert results from JSON format
+    result <- jsonlite::fromJSON(rawToChar(req$content))
+    
+    # if an API request limit has been hit, try again after requested cooldown period
+    while (length(result)==1) {
+      buffer <- req$all_headers[[1]]$headers$`retry-after`
+      if (is.null(buffer)) {
+        buffer <- "1"
+      }
+      print(paste0("Too many API requests. Trying again in ",buffer," second(s)."))
+      Sys.sleep(as.numeric(buffer))
       
-      # make GET request to query the artist info
-      req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
+      # make new GET request to query the playlist
+      req <- httr::GET(playlist, 
                        httr::add_headers(
                          "Accept" = "application/json",
                          "Content-Type" = "application/json", 
                          "Authorization" = paste0("Bearer ", token)
-                       ))
-      # convert results from JSON format
-      info <- jsonlite::fromJSON(rawToChar(req$content))
+                       ), query = list(offset = offset, limit=100))
       
-      # if an API request limit has been hit, try again after 5 seconds
-      while (length(info)==1) {
-        print("Too many API requests. Trying again in 5 seconds.")
-        Sys.sleep(5)
+      # convert results from JSON format
+      result <- jsonlite::fromJSON(rawToChar(req$content))
+    }
+    
+    # get genres and popularity of the current block of tracks
+    genres <- c()
+    popularity <- c()
+    for (track in result$items$track$artists) {
+      
+      # extract info on track artist
+      if (is.null(track[[1]]$id)) {
+        artists <- track$id
+      } else {
+        artists <- track[[1]]$id
+      }
+      
+      # if there are multiple artists, get info on each one
+      for (artist in artists) {
         
-        # make new GET request to query the artist info
+        # make GET request to query the artist info
         req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
                          httr::add_headers(
                            "Accept" = "application/json",
@@ -208,20 +220,42 @@ query_playlist <- function (plID, token) {
                          ))
         # convert results from JSON format
         info <- jsonlite::fromJSON(rawToChar(req$content))
-      }
-      
-      # add genres
-      if (length(info$genres)>0) {
-        for (genre in 1:length(info$genres)) {
-          genres <- c(genres,info$genres[genre])
+        
+        # if an API request limit has been hit, try again after requested cooldown period
+        while (length(info)==1) {
+          buffer <- req$all_headers[[1]]$headers$`retry-after`
+          if (is.null(buffer)) {
+            buffer <- "1"
+          }
+          print(paste0("Too many API requests. Trying again in ",buffer," second(s)."))
+          Sys.sleep(as.numeric(buffer))
+          
+          # make new GET request to query the artist info
+          req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
+                           httr::add_headers(
+                             "Accept" = "application/json",
+                             "Content-Type" = "application/json", 
+                             "Authorization" = paste0("Bearer ", token)
+                           ))
+          # convert results from JSON format
+          info <- jsonlite::fromJSON(rawToChar(req$content))
         }
+        
+        # add genres
+        if (length(info$genres)>0) {
+          for (genre in 1:length(info$genres)) {
+            genres <- c(genres,info$genres[genre])
+          }
+        }
+        
+        # add popularity
+        popularity <- c(popularity,info$popularity)
       }
-      
-      # add popularity
-      popularity <- c(popularity,info$popularity)
     }
+    
+    # iterate the offset used for addtional playlist GET requests
+    offset <- offset + length(result$items$track$track)
   }
-  
   
   # change some genre names to match available API queries
   genres[genres=="psychedelic rock"] <- "psych-rock"
@@ -243,8 +277,13 @@ query_playlist <- function (plID, token) {
     genres <- names(genres)
   }
   
-  # add the average popularity
-  result$popularity <- round(mean(popularity))
+  # compile the results
+  info <- list()
+  info$name <- name
+  info$total <- ntracks
+  info$genres <- genres
+  info$popularity <- round(mean(popularity))
+  info$ID <- plID
   
-  return(list(result,genres))
+  return(info)
 }

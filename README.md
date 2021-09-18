@@ -70,21 +70,14 @@ Now that all of the authorization has been taken care of, we can get down to bus
 
 Spotify has done a lot of acoustic analysis on their song base, which (I'm assuming) is what they generally use in making recommendations. However, some of those recommendations can be a bit heavy-handed and focused on specific artists that show up often in the playlist. What we're going to do here is remove that constraint and make recommendations on <em>patterns</em> that underly the acoustic features in your playlist. Pretty cool, huh?
 
-The first thing to do is get some basic information about the playlist you want to analyze. This will include all of the regular playlist info provided by the Spotify API, but also a list of the 5 most common genres in the (up to) 100 first songs in the playlist:
-
+The first thing to do is get some basic information about the playlist you want to analyze, including a list of the 5 most common genres:
 
     plfeatures <- query_playlist(plID, token)
     
-    info <- plfeatures[[1]]
-    
-    genres <- plfeatures[[2]]
-
-
 
 Now here comes the fun bit. The next function will analyze all of the acoustic/audio features for all of the songs in your playlist, and perform a principal components analysis (PCA) on all of these features. This will extract underlying patterns in your listening habits that you probably didn't even know were there! This function may take a bit of time if you have many songs in the playlist, because we'll need to take some breaks if your API requests are getting too quick/numerous:
 
-
-    payload <- analyze_playlist_features(info, token)
+    payload <- analyze_playlist_features(plfeatures, token)
 
 
 # Generating a recommended playlist
@@ -92,7 +85,7 @@ The hard part is done!
 
 Now that you have analyzed your initial playlist, you can generate <em>new</em> playlists full of songs that have <em>similar acoustic features</em> associated with those hidden, underlying patterns in your listening habits. The recommendation will also be based on genres, so you can either use the 5 most common genres already extracted from your initial playlist... 
 
-    create_featured_playlist(payload, genres, 50, userID, token)
+    create_featured_playlist(payload, plfeatures$genres, 50, userID, token)
 
 ...or you can provide a completely different genre! The cool thing is that you can do this for any music genre you want: make a country music list based on your hip-hop listening habits, or a punk list based on your classical music habits! A full list of the available genre names is given in the "genres.R" file. You can also control how many songs are in the playlist (100 maximum).
 
