@@ -176,50 +176,71 @@ query_playlist <- function (plID, token) {
     
     # extract info on track artist
     if (is.null(track[[1]]$id)) {
-      artist <- track$id
+      artists <- track$id
     } else {
-      artist <- track[[1]]$id
+      artists <- track[[1]]$id
     }
     
-    # if there are multiple artists, get the first one
-    artist <- artist[1]
-    
-    # make GET request to query the artist info
-    req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
-                     httr::add_headers(
-                       "Accept" = "application/json",
-                       "Content-Type" = "application/json", 
-                       "Authorization" = paste0("Bearer ", token)
-                     ))
-    # convert results from JSON format
-    info <- jsonlite::fromJSON(rawToChar(req$content))
-    
-    # add genres
-    if (length(info$genres)>0) {
-      for (genre in 1:length(info$genres)) {
-        if (info$genres[genre] %in% available) {
+    # if there are multiple artists, get info on each one
+    for (artist in artists) {
+      
+      # make GET request to query the artist info
+      req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
+                       httr::add_headers(
+                         "Accept" = "application/json",
+                         "Content-Type" = "application/json", 
+                         "Authorization" = paste0("Bearer ", token)
+                       ))
+      # convert results from JSON format
+      info <- jsonlite::fromJSON(rawToChar(req$content))
+      
+      # if an API request limit has been hit, try again after 5 seconds
+      while (length(info)==1) {
+        print("Too many API requests. Trying again in 5 seconds.")
+        Sys.sleep(5)
+        
+        # make new GET request to query the artist info
+        req <- httr::GET(paste0("https://api.spotify.com/v1/artists/",artist), 
+                         httr::add_headers(
+                           "Accept" = "application/json",
+                           "Content-Type" = "application/json", 
+                           "Authorization" = paste0("Bearer ", token)
+                         ))
+        # convert results from JSON format
+        info <- jsonlite::fromJSON(rawToChar(req$content))
+      }
+      
+      # add genres
+      if (length(info$genres)>0) {
+        for (genre in 1:length(info$genres)) {
           genres <- c(genres,info$genres[genre])
         }
       }
+      
+      # add popularity
+      popularity <- c(popularity,info$popularity)
     }
-    
-    # add popularity
-    popularity <- c(popularity,info$popularity)
   }
   
   
-  # retain the top genres
-  genres <- sort(table(unlist(genres)),decreasing=T)
-  idx <- which.max(abs(diff(genres)))[1]
-  if (length(genres)>1) {
-    genres <- names(genres[1:idx])
-  } else {
-    genres <- names(genres)
-  }
+  # change some genre names to match available API queries
+  genres[genres=="psychedelic rock"] <- "psych-rock"
+  genres[genres=="hard rock"] <- "hard-rock"
+  
+  # retain and sort genres that match available API queries
+  genres <- genres[genres %in% available]
+  genres <- sort(table(genres),decreasing=T)
   
   # reduce to 5 genres if need be
   if (length(genres)>=5) {
     genres <- genres[1:5]
+  }
+  
+  # retain the top genres (by standard deviation of counts)
+  if (length(genres)>1) {
+    genres <- names(genres[genres>sd(genres)])
+  } else {
+    genres <- names(genres)
   }
   
   # add the average popularity

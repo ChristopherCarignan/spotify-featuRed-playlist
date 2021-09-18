@@ -130,18 +130,37 @@ analyze_playlist_features <- function (result, token) {
   # retain the top weighted tracks, based on PC scores
   orddat <- orddat[orddat[,2]>=1,]
   
+  # extract the PC loadings and apply weighting based on eigenvalues
+  loadings <- pca$rotation[,1:tokeep]
+  for (PC in 1:tokeep) {
+    loadings[,PC] <- loadings[,PC]*vars[PC]
+  }
+  
+  # sort the acoustic features based on importance
+  sortfeatures <- sort(rowMeans(abs(loadings)),decreasing=T)
+  
+  # retain important acoustic features (mean - 1 SD)
+  thresh <- mean(sortfeatures) - sd(sortfeatures)
+  features <- sortfeatures[sortfeatures>=thresh]
+  
   # get the relevant acoustic features for the retained tracks
-  filtdat <- acdata[orddat[,1],]
+  filtdat <- acdata[orddat[,1],names(features)]
   avgfeatures <- as.data.frame(t(colMeans(filtdat)))
   
   # for integer features, find the most common one
-  avgfeatures$key <- as.numeric(names(rev(sort(table(filtdat$key))))[1])
-  avgfeatures$mode <- as.numeric(names(rev(sort(table(filtdat$mode))))[1])
-  avgfeatures$time_signature <- as.numeric(names(rev(sort(table(filtdat$time_signature))))[1])
+  if (!is.null(avgfeatures$key)) {
+    avgfeatures$key <- as.numeric(names(rev(sort(table(filtdat$key))))[1])
+  }
+  if (!is.null(avgfeatures$mode)) {
+    avgfeatures$mode <- as.numeric(names(rev(sort(table(filtdat$mode))))[1])
+  }
+  if (!is.null(avgfeatures$time_signature)) {
+    avgfeatures$time_signature <- as.numeric(names(rev(sort(table(filtdat$time_signature))))[1])
+  }
   
   payload <- c()
   # add the average feature values to the payload to be sent for playlist recommendation
-  for (x in 1:length(featnames)) {
+  for (x in 1:length(features)) {
     payload[[paste0("target_",names(avgfeatures)[x])]] <- as.numeric(avgfeatures[x])
   }
   
