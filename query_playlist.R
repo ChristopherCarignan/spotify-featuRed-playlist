@@ -214,7 +214,7 @@ query_playlist <- function (plID, token) {
   genres <- names(genres[1:idx])
   
   # reduce to 5 genres if need be
-  if (length(genre)>=5) {
+  if (length(genres)>=5) {
     genres <- genres[1:5]
   }
   
