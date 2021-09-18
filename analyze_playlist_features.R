@@ -120,7 +120,12 @@ analyze_playlist_features <- function (info, token) {
   tokeep  <- length(which(vars >= 1)) 
   
   # order the (absolute) scores for the retained PCs, to be used as a weighting
-  orddat <- rowMeans(abs(pca$x[,1:tokeep]))
+  if (tokeep > 1) {
+    orddat <- rowMeans(abs(pca$x[,1:tokeep]))
+  } else {
+    orddat <- abs(pca$x[,1])
+  }
+  
   orddat <- cbind(1:length(orddat),orddat)
   orddat <- orddat[order(orddat[,2],decreasing=T),]
   
@@ -129,12 +134,18 @@ analyze_playlist_features <- function (info, token) {
   
   # extract the PC loadings and apply weighting based on eigenvalues
   loadings <- pca$rotation[,1:tokeep]
-  for (PC in 1:tokeep) {
-    loadings[,PC] <- loadings[,PC]*vars[PC]
+  if (tokeep > 1) {
+    for (PC in 1:tokeep) {
+      loadings[,PC] <- loadings[,PC]*vars[PC]
+    }
   }
   
   # sort the acoustic features based on importance
-  sortfeatures <- sort(rowMeans(abs(loadings)),decreasing=T)
+  if (tokeep > 1) {
+    sortfeatures <- sort(rowMeans(abs(loadings)),decreasing=T)
+  } else {
+    sortfeatures <- sort(abs(loadings),decreasing=T)
+  }
   
   # retain important acoustic features (mean - 1 SD)
   thresh <- mean(sortfeatures) - sd(sortfeatures)
